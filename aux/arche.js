@@ -16,15 +16,21 @@ Arche.structure.type = {
 };
 
 Arche.structure.tone = {
+    // or mask for each tone
     stating:    0x01,
-    content:    0x02,
+    detailed:   0x02,
     original:   0x04,  
-    defining:   0x08,
+    definitive: 0x08,
+    // the anti-bit counter-parts
+    inquiring:  0x1e,
+    abstract:   0x1d,
+    hearsay:    0x1b,
+    whimsy:     0x17,      
 };
 
 Arche.fromJS = function(js_object) {
     aux.apply_to_fields(js_object, function(field) {
-
+                    
     });
 };
 

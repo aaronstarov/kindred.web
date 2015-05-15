@@ -5,9 +5,9 @@ var express = require('express'),
     compress = require('compression');
 
 app.use(compress());
-app.use(express.static('build'));
+app.use(express.static('dist'));
 app.get('/', function(req, res){
-    res.sendFile(__dirname+'/../build/index.html');
+    res.sendFile(__dirname+'index.html');
 });
 
 var owner_port = 8421,

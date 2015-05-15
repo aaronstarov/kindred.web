@@ -1,44 +1,3 @@
-var num_errors = 0;
-
-function expect(a,b) {
-    var err = function() {
-        console.log("!! '"+JSON.stringify(a)+"' does not equal '"+JSON.stringify(b)+"'");
-        ++num_errors;
-    }
-    if(Array.isArray(a) && Array.isArray(b)) {
-        if(a.length == b.length) {
-            for(var i in a) {
-                if(a[i] != b[i]) {
-                    err();
-                    break;    
-                }
-            }
-        }
-    } else if(a != b) {
-        err();
-    }
-}
-
-var GH = [
-    function d() {
-        console.log("GH");
-    },
-    "string",
-    ["a","b","c"],
-    213,
-];
-
-var f = function(){
-    this.a = "hi";
-    this.say = function() { return this.a; };
-};
-
-var F = new f();
-expect("hi",F.say());
-F.a = "n";
-expect("n",F.say());
-
-var aux = require("./lib/0-aux");
 
 var obj = {
     t: {
@@ -53,17 +12,52 @@ var obj = {
     v: undefined,
 };
 
-var undefined_fields = aux.find_undefined_fields(obj);
-// order is important here
-expect(["v","t.a","t.d","t.b.c"], undefined_fields);
+note_result(JSON.stringify(obj));
 
-aux.set_field(obj, "t.b.c", 5);
+Aux.set_field(obj, "t.b.c", 5);
 expect(obj.t.b.c, 5);
 
-aux.set_field(obj, "v", "str");
+Aux.set_field(obj, "v", "str");
 expect(obj.v, "str");
 
-expect(["t.a","t.d"], aux.find_undefined_fields(obj));
+note_result("Set field test passed.");
 
+var arr = [4,5,6];
+var arr8 = new Uint8Array(arr);
+expect(arr8.length, arr.length);
 
-console.log("\nFinished testing with "+num_errors.toString()+" errors.");
+note_result("Arrays have expected lengths...");
+
+var rand_buffer = Aux.get_random_buffer();
+note_result("Created random buffer: "+rand_buffer);
+var cipher = Aux.create_cipher(rand_buffer);
+note_result("create_cipher() w/ random seed: "+JSON.stringify(cipher));
+var simple_buffer = new Uint8Array([1,2,4,8,12]);
+var simple_cipher = Aux.create_cipher(simple_buffer);
+note_result("create_cipher() w/ seed [1,2,4,8,12]: "+JSON.stringify(simple_cipher));
+var trivial_buffer = new Uint8Array([1,1,1,1,1,1]);
+var trivial_cipher = Aux.create_cipher(trivial_buffer);
+note_result("create_cipher() w/ seed [1,1,1,1,1,1]: "+JSON.stringify(trivial_cipher));
+var byte_found = [];
+// check that ciphers contain every single byte once
+var ciphers = [cipher, simple_cipher, trivial_cipher];
+for(var c in ciphers) {
+    var the_chipher = chiphers[c];
+    for(var i = 0; i < 256; i++) {
+        byte_found.push(false);
+    }
+    for(var i = 0; i < 256; i++) {
+        byte_found[the_cipher[i]] = true;
+    }
+    var num_bytes_missing = 0;
+    for(var i = 0; i < 256; i++) {
+        if(!byte_found[i]) {
+            num_bytes_missing++;
+        }
+    }
+    if(num_bytes_missing > 0) {
+        console.log("!! ".red + "There are "+num_bytes_missing+" from cipher "+c+".");
+        num_errors++;
+    }
+}
+

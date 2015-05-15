@@ -8,14 +8,14 @@ Kindred.dom = {};
 
 Kindred.dom.addHTML = function(parent_element, html_obj) {
     var elements = [];
-    aux.apply_to_fields(html_obj, function(tag) {
+    Aux.apply_to_fields(html_obj, function(tag) {
         var tag_obj = html_obj[tag];
         var element = document.createElement(tag);
-        aux.apply_to_fields(tag_obj, function(field) {
+        Aux.apply_to_fields(tag_obj, function(field) {
             switch(field) {
                 case "style":
                     var style_obj = tag_obj["style"];
-                    aux.apply_to_fields(style_obj, function(style_field) {
+                    Aux.apply_to_fields(style_obj, function(style_field) {
                         console.log("style "+style_field+": "+style_obj[style_field]);
                         element.style[style_field] = style_obj[style_field]; 
                     });
@@ -72,7 +72,7 @@ Kindred.Renderer = function() {
     T.present = function(parent_obj, obj) { 
         console.log("rendering "+JSON.stringify(obj));
 
-        aux.apply_to_fields(obj, function(field) {
+        Aux.apply_to_fields(obj, function(field) {
             switch(field) {
                 case "element": 
                     // skip over dom elements 
@@ -118,7 +118,7 @@ Kindred.use_reference = function(id, values) {
     var template = get_template(id);
     for(var i in template.open_fields) {
         var open_field = template.open_fields[i];
-        aux.set_field(template.obj, open_field, values[i]);
+        Aux.set_field(template.obj, open_field, values[i]);
     }
     return template.obj;
 };
@@ -157,7 +157,7 @@ Kindred.basic.presentation = {
     undefined: function(p, o, state) {},
     
     object: function(p, o, state) {
-        aux.apply_to_fields_of(o, function(field) {
+        Aux.apply_to_fields_of(o, function(field) {
             switch(field) {
                 default:
                     o[field].element = Kindred.dom.addHtml(p.element, {
