@@ -37,12 +37,11 @@ Aux.get_random_buffer = function(min, max) {
  * Takes array of ints as seed.
  */
 Aux.create_cipher = function(seed) {
-    
-    var num_rounds = 1248 / seed.length;
+    if(seed.length < 1) return null;
+     
+    var num_rounds = 5999 / seed.length;
 
-    console.log("Num rounds:"+num_rounds.toString());
-
-    cipher = new Uint8Array(256);
+    var cipher = new Uint8Array(256);
     for(var i = 0; i < 256; i++) {
        cipher[i] = i; 
     }
