@@ -1,0 +1,67 @@
+var http = require("http"),
+    io = require("socket.io")(http);
+
+var path = require("path"),
+    fileSystem = require("fs");
+
+
+var start_port = 8421;
+var local_port = 8422;
+var other_port = 8442;
+
+var respond = function(response, file) {
+    var filePath = path.join(__dirname, 'client', file);
+    var stat = fileSystem.statSync(filePath);
+
+    var ext = path.extname(filePath);
+    var content_type = "text/html";
+    switch(ext) {
+        case '.js':
+            content_type = "text/javascript";
+            break;
+    }
+
+    response.writeHead({
+        'Content-Type': content_type,
+        'Content-Length': stat.size
+    });
+    var stream = fileSystem.createReadStream(filePath);
+    stream.pipe(response);
+};
+
+http.createServer(function(req, res) {
+    try {
+        var file = '.' + req.url;
+        if(file == './') file = 'index.html';
+        respond(res, file);
+    } catch(err) {
+        respond(res, '404.html');
+    }
+    //res.end();
+}).listen(start_port, 'localhost');
+
+http.createServer(function(req, res) {
+    
+}).listen(other_port);
+
+
+//var app = require("express")(),
+//    http = require("http").Server(app),
+//    io = require('socket.io')(http);
+//
+// local requests
+//app.get('/', function(req, res) {
+//    res.sendFile("index.html");
+//});
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+});
+
+//http.listen(start_port, function() {
+//    console.log("Server launched. Listening on "+local_port.toString()+" (for you) "+
+//    "and "+other_port.toString()+" (for everyone else).");
+//});
+
+console.log("Server launched. Listening on "+local_port.toString()+" (for you) "+
+    "and "+other_port.toString()+" (for everyone else).");
