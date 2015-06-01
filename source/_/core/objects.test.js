@@ -102,8 +102,13 @@ var list_template = {
     base: {
         a: null
     },
-    vars: [field:a, type:[{ 
-        base: {b:1,c:null,d:5},
-        vars: [{field:"c", type:"string"} ]
-    }],
+    vars: [
+        {
+            field:a, 
+            type:[{ 
+                base: {b:1,c:null,d:5},
+                vars: [{field:"c", type:"string"} ]
+            }]
+        },
+    ],
 };

@@ -23,27 +23,41 @@ var fs = require('fs'),
     colors = require('colors'),
     uglify = require('uglify-js');
 
-var build_dir = "../build/",
-    dev_build_dir = build_dir+"dev/",
-    prod_build_dir = build_dir+"prod/",
+var build_dir = path.normalize("../build/"),
+    dev_build_dir = path.join(build_dir,"dev"),
+    prod_build_dir = path.join(build_dir,"prod"),
 
     build_info = [
         { 
             name: "server",
-            dirs: ["aux/","server/"],
+            dirs: ["_","server"],
             dev: "kindred-server.js",
             out: "kindred-server.min.js",
         },
         {
             name: "client",
-            dirs: ["aux/","client/"],
+            dirs: ["_","client"],
             dev: "kindred-client.js",
-            out: "dist/kindred-client.min.js",
+            out: path.join("dist","kindred-client.min.js"),
         },
     ];
 
-makedir(dev_build_dir);
-makedir(prod_build_dir);
+var rmdir = function(dirPath, removeSelf) {
+  if (removeSelf === undefined)
+    removeSelf = true;
+  try { var files = fs.readdirSync(dirPath); }
+  catch(e) { return; }
+  if (files.length > 0)
+    for (var i = 0; i < files.length; i++) {
+      var filePath = path.join(dirPath, files[i]);
+      if (fs.statSync(filePath).isFile())
+        fs.unlinkSync(filePath);
+      else
+        rmdir(filePath);
+    }
+  if (removeSelf)
+    fs.rmdirSync(dirPath);
+};
 
 var spawn = require("child_process").spawn;
 
@@ -94,16 +108,16 @@ function traverse_tree(root_dir) {
             top_files = [],
             files = [];
         //var dir_path = path.join(root,dir);
-        var dir_path = dir;
+        var dir_path = path.normalize(dir);
         var contents = fs.readdirSync(dir_path);
 
         for(var i in contents) {
             var f = contents[i];
             if(f[0] != '.') {
-                var fpath = dir_path + f;
+                var fpath = path.join(dir_path, f);
                 var stat = fs.statSync(fpath);
                 if(stat.isDirectory()) {
-                    dirs.push(fpath+'/'); 
+                    dirs.push(fpath); 
                 } else {
                     top_files.push(fpath);
                 }
@@ -122,17 +136,26 @@ function traverse_tree(root_dir) {
 function build() {
     console.log("\n--| Building Kindred |---------------------------\n");
 
+    rmdir(build_dir, false);
+    makedir(dev_build_dir);
+    makedir(prod_build_dir);
+
     // Read and write index files.
-    var html_source_dir = "client/html/";
-    var dev_index_file = dev_build_dir+"index.html";
-    var dev_index_head = fs.readFileSync(html_source_dir+"index-head.html");
-    var dev_index_tail = fs.readFileSync(html_source_dir+"index-tail.html");
+    var html_source_dir = path.join("client","html");
+    var dev_index_file = path.join(dev_build_dir,"index.html");
+    var dev_index_head = fs.readFileSync(path.join(html_source_dir,"index-head.html"));
+    var dev_index_tail = fs.readFileSync(path.join(html_source_dir,"index-tail.html"));
     fs.writeFileSync(dev_index_file, dev_index_head, {flag:'w'});
-    var prod_index_file = prod_build_dir+"index.html";
-    var prod_index = fs.readFileSync(html_source_dir+"min-index.html");
+    var prod_index_file = path.join(prod_build_dir,"index.html");
+    var prod_index = fs.readFileSync(path.join(html_source_dir,"min-index.html"));
     fs.writeFileSync(prod_index_file, prod_index, {flag:'w'});
 
-    makedir(prod_build_dir+"dist/");
+    // Write test header
+    var test_helper = fs.readFileSync(path.join("test","_","helper.js"));
+    makedir(path.join(dev_build_dir,"dist"));
+    fs.writeFileSync(path.join(dev_build_dir,"dist","test.js"), test_helper, {flag:'w'});
+
+    makedir(path.join(prod_build_dir,"dist"));
     
     for(var b in build_info) {
         console.log("- - - - - - - - - - - - - - - - - - - - - - - - -");
@@ -146,11 +169,11 @@ function build() {
         }
 
         // These will wrap every test.
-        var test_head = fs.readFileSync("test/"+build_obj.name+"/head.js");
-        var test_tail = fs.readFileSync("test/"+build_obj.name+"/tail.js");
+        var test_head = fs.readFileSync(path.join("test",build_obj.name,"head.js"));
+        var test_tail = fs.readFileSync(path.join("test",build_obj.name,"tail.js"));
 
-        var dev_build_file = __dirname+'/'+dev_build_dir+build_obj.dev;
-        var prod_build_file = __dirname+'/'+prod_build_dir+build_obj.out;
+        var dev_build_file =  path.join(__dirname,dev_build_dir, build_obj.dev);
+        var prod_build_file = path.join(__dirname,prod_build_dir,build_obj.out);
 
         console.log("  Constructing "+build_obj.name.yellow+" file with:\n");
                     
@@ -167,7 +190,7 @@ function build() {
                 var kb = (data.length/1024);
                 total_kb += kb;
                 var file_str = "\t-("+kb.toPrecision(5)+" Kb)\t"+file;
-                var file_dir = dev_build_dir+"dist/"+path.dirname(file)+'/';
+                var file_dir = path.join(dev_build_dir,"dist",path.dirname(file));
                 console.log(file_str.gray);
                 var header = "//-------------------------------------------------\n"+
                              "//\n//  "+file+" ("+kb.toPrecision(5)+" Kb)\n//\n"+ 
@@ -178,7 +201,7 @@ function build() {
                         if(file_parts[test_location] === 'test') {
                             // Wrap this into a test unit and append to the dev file.
                             var original_file = file_parts.slice(0,test_location).concat(['js']).join('.');     
-                            var original_path = dev_build_dir+"dist/"+original_file;
+                            var original_path = path.join(dev_build_dir,"dist",original_file);
                             
                             fs.writeFileSync(original_path, test_head, {flag:'a'});
                             fs.writeFileSync(original_path, '\nTest.begin("'+original_file+'");\n\n', {flag:'a'});
@@ -189,12 +212,12 @@ function build() {
                             // for an unminified version to make tracking down issues simpler during
                             // development. 
                             var file_name = path.basename(file);
-                            makedir(__dirname+'/'+file_dir);
+                            makedir(path.join(__dirname,file_dir));
                             var script_include = "        <script src='"+file+"'></script>\n";
-                            fs.writeFileSync(file_dir+file_name, data, {flag:'w'}); 
+                            fs.writeFileSync(path.join(file_dir,file_name), data, {flag:'w'}); 
                             fs.writeFileSync(dev_index_file, script_include, {flag:'a'});
                             files_to_compress.push(file);
-                            fs.writeFileSync(prod_build_dir+"dist/client.js", data+"\n", {flag:'a'});    
+                            fs.writeFileSync(path.join(prod_build_dir,"dist","client.js"), data+"\n", {flag:'a'});    
                         }
                         break
                     case "server":
@@ -210,14 +233,6 @@ function build() {
         }
         console.log("\n  Total size: "+total_kb.toPrecision(5)+" Kb\n");    
         console.log("\n  Minifying the files above.\n");
-        //for( var f in files_to_compress) {
-        //    var fil = files_to_compress[f];
-        //    try { 
-        //        var _minified = uglify.minify(fil);
-        //    } catch(err) {
-        //        console.log("error while minifying "+fil);
-        //    }
-        //}
         var minified = uglify.minify(files_to_compress);
         
         fs.writeFileSync(prod_build_file, minified.code, {flag:'w'});
@@ -248,12 +263,12 @@ var watcher = function (f, curr, prev) {
 };
 
 // Watch our files for changes and rebuild when they do
-var dirs_to_build = ['aux/','client/','server/','test/'];
+var dirs_to_build = ['_','client','server','test'];
 for(var _dir in dirs_to_build) {
     var dir = dirs_to_build[_dir];
     var watch_note = "\n  Watching "+dir+" for changes.";
     console.log(watch_note.gray);
-    watch.watchTree(__dirname+'/'+dir, watcher);
+    watch.watchTree(path.join(__dirname,dir), watcher);
 }
 
 //require("./dist/test.js")();
@@ -267,14 +282,17 @@ for(var _dir in dirs_to_build) {
 //              "  Redis output will be logged in log/redis.log\n");
 //spawn_command("redis", redis_cmd);
 
-makedir("../data/");
-var mongo_cmd = "mongod --dbpath=../data --port 22488";
-console.log("\n  Starting mongodb with:\n\n"+
-              "    $ "+mongo_cmd+"\n\n" +
-              "  Output will be spilled below.\n");
-spawn_command("mongo", mongo_cmd);
+//makedir(path.normalize("../data/"));
+//var mongo_cmd = "mongod --dbpath=../data --port 22488";
+//console.log("\n  Starting mongodb with:\n\n"+
+//              "    $ "+mongo_cmd+"\n\n" +
+//              "  Output will be spilled below.\n");
+//spawn_command("mongo", mongo_cmd);
 
-var server_cmd = "nodemon "+dev_build_dir+"server.js --watch "+dev_build_dir;
+// kill any existing kindred server
+spawn_command("kill", "kill $(ps aux | grep 'kindred-server' | awk '{print $2}')");
+
+var server_cmd = "nodemon "+" --watch "+dev_build_dir+" "+path.join(dev_build_dir,"kindred-server.js");
 console.log("\n  Starting server with:\n\n"+
               "    $ "+server_cmd+"\n\n" +
               "  The server will automatically restart when you make changes. Its output follows.\n");

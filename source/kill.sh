@@ -1,1 +1,1 @@
-kill $(ps aux | grep 'dev/server.js' | awk '{print $2}')
+kill $(ps aux | grep 'kindred-server' | awk '{print $2}')

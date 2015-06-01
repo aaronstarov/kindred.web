@@ -1,7 +1,4 @@
-var colors = require("colors");
-var fs = require("fs");
-
-var Test = {};
+Test = {};
 
 Test.report = {
     title: "Kindred Tests",
@@ -13,7 +10,7 @@ Test.current_section = null;
 
 Test.begin = function(name) {
     Test.current_section = {test:name, results:[]};
-    Test.report.sections.push(current_section);
+    Test.report.sections.push(Test.current_section);
 };
 
 Test.note_result = function(msg) {

@@ -1,4 +1,6 @@
 
+// comment
+
 Kindred.make_reference = function(obj) {
     var fields_to_fill = Template.make_from(obj);
     // save to database, return unique id
@@ -30,10 +32,9 @@ var connect_socket = function(host) {
 var local_connection = connect_socket();
 var home_is_set = false;
 local_connection.on('home', function(home) {
-    console.log(JSON.stringify(home));
     if(!home_is_set){
-        renderer.present(Kindred.root, home);
-        //Kindred.dom.addHTML(Kindred.root.element, home);
+        //renderer.present("home", home, Kindred.root);
         home_is_set = true;
     }
-});
+});    
+renderer.present("tests", Test.report, document.getElementById("dev-root")); 

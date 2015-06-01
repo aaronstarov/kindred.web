@@ -8,7 +8,7 @@ Kindred.Renderer = function() {
     
     T.modes = {};
 
-    T.states = {};
+    T.state = {};
 
     // HTML elements will live here with paths like:
     //      "kin1234.class.names.of.elements"
@@ -76,51 +76,58 @@ Kindred.Renderer = function() {
 
     var present = function(obj_name, obj, parent_element) { 
 
-        console.log("rendering "+JSON.stringify(obj));
-        
-        var elem_type = obj.html ? obj.html : "div";
-        var element = document.createElement(elem_type);
-        var obj_name_parts = obj_name.split('.');
-        var immediate_name = obj_name_parts[obj_name_parts.length-1];
-        element.className = immediate_name; 
-        parent_element.appendChild(element);
+        console.log("rendering "+obj_name+':'+JSON.stringify(obj));
 
-        Aux.apply_to_fields(obj, function(field) {
-            var field_func = T.renderer.of[field];
-            if(typeof field_func === "function") {
-                var new_elem = field_func(element, obj[field], T.state[T.mode]);  
-                if(typeof new_elem != "undefined") {
-                    T.add_element(new_elem, field_path);
+        var obj_name_parts = obj_name.split('.'),
+            obj_name_len = obj_name_parts.length,
+            parent_name = obj_name_parts.slice(0, obj_name_len-1),
+            immediate_name = obj_name_parts[obj_name_len-1],
+            obj_type = typeof obj;
+
+        // check if this is a keyword
+        var field_func = T.renderer.of[immediate_name];
+        if(typeof field_func === "function") { 
+            var new_elem = field_func(element, obj, T.state[T.mode]);  
+            //if(typeof new_elem != "undefined") {
+            //    T.add_element(new_elem, field_path);
+            //}
+        } else if(immediate_name === "render") { // check if we're switching render modes
+            if(!obj.hasOwnProperty("mode") ||
+               !obj.hasOwnProperty("content")) {
+                throw error+"'render' object must have 'mode' and 'content' fields.";
+            }
+            T.use(obj.mode);
+            T.present(parent_name, render_obj.content, element);
+
+        } else {
+            
+            var elem_type = obj.html ? obj.html : "div";
+            var element = document.createElement(elem_type);
+            element.className = immediate_name;
+            parent_element.appendChild(element);
+
+            if(obj_type === "object") {
+                if(Array.isArray(obj)) {
+                    console.log("rendering array");
+                    
+                    element.className += " list";
+                    for(var item = 0, len = obj.length; item < len; item++) {
+                        T.present(obj_name+"-item", obj[item], element);
+                    }
+                } else {
+                    console.log("rendering object");
+
+                    Aux.apply_to_fields(obj, function(field) {
+                        var field_path = obj_name+'.'+field;
+                        T.present(obj_name+'.'+field, obj[field], element);
+                    });
                 }
             } else {
-                switch(field) {
-                    case "render":
-                        var render_obj = obj.render;
-                        if(!render_obj.hasOwnProperty("mode") ||
-                           !render_obj.hasOwnProperty("content")) {
-                            throw error+"'render' object must have 'mode' and 'content' fields.";
-                        }
-                        T.use(render_obj.mode);
-                        T.present(obj_name, render_obj.content, element);
-                        break;
-                    default:
-                        var field_path = obj_name+'.'+field;
-                        T.set("context", field_path); // XXX to be seen whether or not this proves useful..
-                        var field_obj = obj[field];
-                        if(Array.isArray(field_obj)) {
-                            element.className += " list";
-                            for(var item = 0, len = field_obj.length; item < len; item++) {
-                                T.present(field_path+"-item", field_obj[item], element);
-                            }
-                        } else {
-                            var obj_representation = T.renderer[typeof field_obj](field_obj, element, T.state[T.mode]);
-                            T.add_element(obj_representation, field_path);
-                            T.present(field_path, field_obj, element);
-                        }
-
-                }
+                console.log("rendering type "+typeof field_obj);
+                var obj_representation = T.renderer[obj_type](obj, element, T.state[T.mode]);
+                console.log(JSON.stringify(obj_representation));
             }
-        });
+        }
     };
 
     /**
@@ -130,18 +137,19 @@ Kindred.Renderer = function() {
      */
 
     T.present = function(obj_name, obj, parent_element, options) {
-        if(T.html.ids_taken > Kindred.config.max_id) {
-            T.cleanup();
-        }
-        do { // add id to circular buffer
-            obj.kindred_id = 'kin'+ (++T.html.last_id).toString();
-            if(T.html.last_id > Kindred.config.max_id) {
-                T.html.last_id = 0;
-            }
-        } while(typeof T.html.elements[obj.kindred_id] !== undefined);
-        T.html.ids_taken++;
+        //if(T.html.ids_taken > Kindred.config.max_id) {
+        //    T.cleanup();
+        //}
+        //do { // add id to circular buffer
+        //    obj.kindred_id = 'kin'+ (++T.html.last_id).toString();
+        //    if(T.html.last_id > Kindred.config.max_id) {
+        //        T.html.last_id = 0;
+        //    }
+        //    console.log("typeof "+typeof T.html.elements[obj.kindred_id]);
+        //} while((typeof T.html.elements[obj.kindred_id]) !== undefined);
+        //T.html.ids_taken++;
 
-        T.html.elements[obj.kindred_id] = obj;
+        //T.html.elements[obj.kindred_id] = obj;
         present(obj_name, obj, parent_element, options);
     };
 };

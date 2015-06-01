@@ -1,5 +1,3 @@
-Aux = {};
-
 Aux.apply_to_fields = function(obj, f) {
     for (var property in obj) {
         if (obj.hasOwnProperty(property)) {

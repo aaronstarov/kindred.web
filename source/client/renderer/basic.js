@@ -14,6 +14,7 @@ Kindred.basic.presentation = {
     of: {
         // Html Attributes 
         //
+        html: function(element, tag, state) {}, // do nothing 
         attr: function(element, attr_obj, state) {
             Aux.apply_to_fields(style_obj, function(field) {
                 element.setAttribute(field, attr_obj[field]);
