@@ -1,15 +1,17 @@
-# Kindred Network
+# Kindred
 
 **NOTE: This project is still in early stages. What is written below should be interpreted as intent rather than reality.**
 
-Kindred is a peer-to-peer internet framework for developing applications that scale effortlessly. Any application released through Kindred is distributed and maintained by the people who use it, meaning there is no need to manage or finance servers.
+Kindred is a peer-to-peer architecture that allows applications to scale effortlessly. Any application released on Kindred is distributed and maintained by the people who use it, meaning there is no need to manage or finance servers.
 
 The central components of Kindred's architecture include:
 
-- a unified data format for communicating structured information,
-- a server that manages the storage and sharing of applications,
-- a presentation framework for rendering and developing applications, and
-- a single identity that can be used for any application across the network.
+- a single network-wide identity,
+- a secure, efficient communication protocol,
+- content distribution based on market principles, and
+- an intuitive presentation framework for developing applications.
+
+The Kindred network is comprised of all machines that implement a minimalistic standard (documentation in progress).
 
 The quickest way to access the developer documentation is by cloning this repo, and running:
  

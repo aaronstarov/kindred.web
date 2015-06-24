@@ -23,9 +23,16 @@ var fs = require('fs'),
     colors = require('colors'),
     uglify = require('uglify-js');
 
+var date_options = {
+    weekday: "long", year: "numeric", month: "short",
+    day: "numeric", hour: "2-digit", minute: "2-digit"
+};
+
 var build_dir = path.normalize("../build/"),
     dev_build_dir = path.join(build_dir,"dev"),
     prod_build_dir = path.join(build_dir,"prod"),
+    documentation_file = path.join(build_dir,"dev","documentation.md"),
+    documented_dirs = ["_","server","client"],
 
     build_info = [
         { 
@@ -41,6 +48,7 @@ var build_dir = path.normalize("../build/"),
             out: path.join("dist","kindred-client.min.js"),
         },
     ];
+
 
 var rmdir = function(dirPath, removeSelf) {
   if (removeSelf === undefined)
@@ -59,6 +67,7 @@ var rmdir = function(dirPath, removeSelf) {
     fs.rmdirSync(dirPath);
 };
 
+var exec = require("child_process").execSync;
 var spawn = require("child_process").spawn;
 
 function spawn_command(cmd_name, cmd, cb) {
@@ -133,7 +142,39 @@ function traverse_tree(root_dir) {
     return traverse_subtree(root_dir, __dirname); 
 }
 
-function build() {
+function traverse_tree_breadth(root_dir) {
+    var traverse_subtree = function(dir, root) {
+        var dirs = [],
+            top_files = [],
+            files = [];
+        //var dir_path = path.join(root,dir);
+        var dir_path = path.normalize(dir);
+        var contents = fs.readdirSync(dir_path);
+
+        for(var i in contents) {
+            var f = contents[i];
+            if(f[0] != '.') {
+                var fpath = path.join(dir_path, f);
+                var stat = fs.statSync(fpath);
+                if(stat.isDirectory()) {
+                    dirs.push(fpath); 
+                } else {
+                    top_files.push(fpath);
+                }
+            }
+        }
+        dirs.sort();
+        for(var i = 0, len = dirs.length; i < len; i++) {
+            var _dir = dirs[i];
+            files = files.concat(traverse_subtree(_dir, dir_path));
+        }
+        return top_files.sort().concat(files);
+    }
+
+    return traverse_subtree(root_dir, __dirname); 
+}
+
+function build(debug_mode) {
     console.log("\n--| Building Kindred |---------------------------\n");
 
     rmdir(build_dir, false);
@@ -155,7 +196,53 @@ function build() {
     makedir(path.join(dev_build_dir,"dist"));
     fs.writeFileSync(path.join(dev_build_dir,"dist","test.js"), test_helper, {flag:'w'});
 
+    // Initialize documentation object -- all sub-sections will mirror this pattern
+    var documentation = fs.readFileSync(path.join(__dirname,"..","README.md"));
+     
     makedir(path.join(prod_build_dir,"dist"));
+
+    var files_breadth_first = [];
+
+    // assemble documentation
+    for(var i = 0, len = documented_dirs.length; i < len; i++) {
+        var dir = documented_dirs[i];
+        files_breadth_first = files_breadth_first.concat(traverse_tree_breadth(dir));
+    }
+
+    for(var i in files_breadth_first) {
+        var file = files_breadth_first[i];
+        var file_path = path.parse(file);
+        if(file_path.ext === '.md') {
+        console.log(file);
+            console.log(file_path);
+            var data = fs.readFileSync(file);
+            var header = "\n\n",
+                path_parts = file_path.dir.split('/'),
+                path_part = path_parts.length,
+                header_title = file_path.name;
+            while(header_title === '_') {
+                header_title = path_parts[--path_part];
+            }
+
+            var header_depth = path_part + 2; 
+            if(!header_title) { // special case for title with all underscores
+                header_title = "Source";
+                header_depth++;
+            }
+            for(var p = path_part; p > base_depth; p--) {
+                // reduce header depth for underscores present in path
+                if(path_parts[p] == '_') {
+                    --header_depth; 
+                }
+            }
+            for(var hi = 0; hi < header_depth; hi++) {
+                header += '#';       
+            }
+            header += ' '+header_title.charAt(0).toUpperCase()+header_title.slice(1)+"\n\n"; 
+
+            documentation += header + data;
+        }
+    }
     
     for(var b in build_info) {
         console.log("- - - - - - - - - - - - - - - - - - - - - - - - -");
@@ -166,6 +253,7 @@ function build() {
         for(var i = 0, len = build_obj.dirs.length; i < len; i++) {
             var dir = build_obj.dirs[i];
             files = files.concat(traverse_tree(dir));
+            files_breadth_first = files_breadth_first.concat(traverse_tree_breadth(dir));
         }
 
         // These will wrap every test.
@@ -174,18 +262,23 @@ function build() {
 
         var dev_build_file =  path.join(__dirname,dev_build_dir, build_obj.dev);
         var prod_build_file = path.join(__dirname,prod_build_dir,build_obj.out);
+        var base_depth = path.parse(__dirname).dir.split('/').length; 
 
         console.log("  Constructing "+build_obj.name.yellow+" file with:\n");
                     
         var total_kb = 0;
         var files_to_compress = [];
+
+        console.log(files_breadth_first.toString());
+
         for(var i in files) {
             var file = files[i];
+            var file_path = path.parse(file); 
             var file_parts = file.split('.');
 
             var test_location = file_parts.length - 2;
 
-            if(file_parts[file_parts.length - 1] === 'js') {
+            if(file_path.ext === '.js') {
                 var data = fs.readFileSync(file);
                 var kb = (data.length/1024);
                 total_kb += kb;
@@ -233,6 +326,12 @@ function build() {
         }
         console.log("\n  Total size: "+total_kb.toPrecision(5)+" Kb\n");    
         console.log("\n  Minifying the files above.\n");
+        if(debug_mode) {
+            for(var i = 0; i < files_to_compress.length; i++) {
+                console.log("  -minifying "+files_to_compress[i]);
+                uglify.minify(files_to_compress[i]);
+            }
+        }
         var minified = uglify.minify(files_to_compress);
         
         fs.writeFileSync(prod_build_file, minified.code, {flag:'w'});
@@ -241,12 +340,15 @@ function build() {
     }
 
 
+    fs.writeFileSync(documentation_file, documentation, {flag:'w'});
     fs.writeFileSync(dev_index_file, dev_index_tail, {flag:'a'});
 
-    console.log("\n-------------------------------------------------");
+    console.log("\n-------------------------------------------------\n  "
+                    +(new Date(Date.now())).toLocaleTimeString("en-us", date_options).dim+'\n');
+
 }
 
-build();
+build(true);
 
 var watcher = function (f, curr, prev) {
     if (typeof f == "object" && prev === null && curr === null) {
@@ -290,7 +392,9 @@ for(var _dir in dirs_to_build) {
 //spawn_command("mongo", mongo_cmd);
 
 // kill any existing kindred server
-spawn_command("kill", "kill $(ps aux | grep 'kindred-server' | awk '{print $2}')");
+var kill_cmd =  "kill $(ps aux | grep 'kindred-server' | awk '{print $2}')";
+//console.log("\n  $ "+kill_cmd.red);
+exec(kill_cmd);
 
 var server_cmd = "nodemon "+" --watch "+dev_build_dir+" "+path.join(dev_build_dir,"kindred-server.js");
 console.log("\n  Starting server with:\n\n"+

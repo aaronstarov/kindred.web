@@ -1,3 +1,28 @@
+if(typeof require === "function")  {
+    var random_bytes = require("crypto").randomBytes;    
+    Aux.get_random_buffer = function(len) {
+        return new Uint8Array(random_bytes(len));
+    }
+} else {
+    var set_random_bytes;
+    var crypto = window.crypto || window.msCrypto;
+    if(crypto) {
+        Aux.get_random_buffer = function(len) {
+            var buf = new Uint8Array(len);
+            crypto.getRandomValues(buf);
+            return buf;
+        }
+    } else {
+        Aux.get_random_buffer = function(len) {
+            var buf = new Uint8Array(len);
+            for(var i = 0; i < len; i++) {
+                buf[i] = Math.round(Math.random() *256);
+            }
+            return buf;
+        }
+    }
+}  
+
 // Make copy with unenumerable properties
 Aux.secure_obj = function(obj) {
     secured = {};
@@ -5,28 +30,17 @@ Aux.secure_obj = function(obj) {
         Object.defineProperty(secured, field, {
             enumerable: false,    
         });
-        secure_obj(secured[field]);
     });
-};
-
-Aux.get_random_byte = function() {
-  return Math.round(Math.random() * 256);
-};
-
-Aux.get_random_buffer = function(min, max) {
-    var rand_buffer = [];
-    for(var i = 0; i < min; i++) {
-      rand_buffer.push(Aux.get_random_byte());        
-    }
-    var len = min,
-        end_byte = Aux.get_random_byte(),
-        rand_byte = Aux.get_random_byte();
-    while(len < max && rand_byte != end_byte) {
-        rand_buffer.push(rand_byte);
-        rand_byte = Aux.get_random_byte();    
-        ++len;
-    }
-    return new Uint8Array(rand_buffer);  
+    var obfuscated = {};
+    var random_str = Aux.get_random_buffer(50 + Math.random()*50).toString();
+    Object.defineProperty(obfuscated, random_str, {
+        enumerable: false,
+        value: obj,    
+    });
+    return {
+        code: random_str,
+        obj: obfuscated,
+    };
 };
 
 /**
@@ -36,23 +50,25 @@ Aux.get_random_buffer = function(min, max) {
  *
  * Takes array of ints as seed.
  */
-Aux.create_cipher = function(seed) {
+Aux.create_cipher = function(seed, rounds) {
     if(seed.length < 1) return null;
-     
-    var num_rounds = 5999 / seed.length;
+    
+    var shuffler = (typeof seed === "undefined") ?
+        Aux.get_random_buffer(50 + Math.random(50)) : seed;
+
+    var num_rounds = (typeof rounds === "undefined") ?
+         59999 / shuffler.length : rounds;
 
     var cipher = new Uint8Array(256);
     for(var i = 0; i < 256; i++) {
        cipher[i] = i; 
     }
 
-    var shuffler = seed,
-        rotation = seed.length,
+    var rotation = shuffler.length,
         sum = 0,
         alt = true,
         a, b, tmp;
     for(var i = 0; i < num_rounds; i++) {
-        console.log("Cipher round: "+i.toString());
         for(var x = 0; x < seed.length; x++) {
             var shuff = shuffler[x];
             if(alt) {
@@ -66,8 +82,8 @@ Aux.create_cipher = function(seed) {
             alt = !alt;
             shuffler[x] = (shuff + rotation) % 256;
             sum += shuff;
+            rotation += sum;
         }
-        rotation += sum;
         sum = 0; 
     }
 
