@@ -25,13 +25,15 @@ renderer.register("form", Kindred.basic.form);
 renderer.register("table", table_renderer);
 //renderer.use("table");
 
-var hey = { elem: { c:"hey", onclick: function(a,b,c){ if(a) { alert("hi");}} }};
+var hey = { elem: { style: {backgroundColor:"red"}, c:"hey", onclick: function(a,b,c){ if(a) { alert("hi");}} }};
 //var hey = { elem: "hey", };
 renderer.present(hey, Kindred.root);
 console.log("Hey's now "+JSON.stringify(hey));
-hey["elem"]["c"] = "something else";
-//hey.elem.c = "bae";
+hey.elem.c = "something else";
+hey.elem.c.style = { backgroundColor: "#900000" };
 
+
+renderer.present(counter, Kindred.root);
 
 // TODO - remove old presentation
 

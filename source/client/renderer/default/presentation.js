@@ -16,8 +16,13 @@ Kindred.basic.presentation = {
         // Html Attributes 
         //
         html: function(element, tag, context) {}, // do nothing 
+        //
+        innerHTML: function(element, html, context) {
+            element.innerHTML = html;
+        },
+        //
         attr: function(element, attr_obj, context) {
-            Aux.apply_to_fields(style_obj, function(field) {
+            Aux.apply_to_fields(attr_obj, function(field) {
                 element.setAttribute(field, attr_obj[field]);
             });
         },
@@ -98,22 +103,36 @@ Kindred.basic.presentation = {
         },
         //
         onkeyup: function(element, func, context) {
-            Kindred.events.register("keyup", element, func); 
+            // XXX - I fear this Kinderd.events.register() method
+            // was overly complex -- leaving it here until that's
+            // verified.
+            //Kindred.events.register("keyup", element, func); 
+            element.addEventListener("keyup", function(e) {
+                func.call(context, e);
+            });
         },
         //
         onkeypress: function(element, func, context) {
-            Kindred.events.register("keypress", element, func);
+            //Kindred.events.register("keypress", element, func);
+            element.addEventListener("keypress", function(e) {
+                func.call(context, e);
+            });
         },
         //
         onkeydown: function(element, func, context) {
-            Kindred.events.register("keydown", element, func);
+            //Kindred.events.register("keydown", element, func);
+            element.addEventListener("keydown", function(e) {
+                func.call(context, e);
+            });
         },
         //
     
     },
 
     // |  
-    // In all functions below:
+    // All functions below will be called when
+    // the renderer encounters a field with that
+    // type.
     // | 
     string: function(element, text, context) {
         element.innerHTML = text;
@@ -132,6 +151,8 @@ Kindred.basic.presentation = {
     },
     
     undefined: function(element, nothing, context) {},
+
+    null: function(element, nothing, context) {},
 
     list: function(element, list, context) {
         element.className += " list";

@@ -44,7 +44,6 @@ Kindred.Renderer = function() {
         // or something else). Hopefully, we will not have to call
         // this manually too often, and can instead perform
         // cleanup logic in reponse to use actions.
-        console.log("Cleaning up first 2015 elements. This should not happen.");
         // For now, messy cleanup of early elements.
         for(var i = 0; i < 2015; i++) {
             T.html.elements["kin"+i.toString()] = undefined;
@@ -57,7 +56,6 @@ Kindred.Renderer = function() {
     };
 
     T.use = function(mode) {
-        console.log("using render mode "+mode);
         T.mode = mode;
         T.renderer = T.modes[mode];
         if(typeof T.renderer === "undefined") {
@@ -81,15 +79,6 @@ Kindred.Renderer = function() {
         var element = ref_element;
 
         console.log("rendering "+obj_name+" in "+T.mode+":"+JSON.stringify(obj));
-        if(parent_element) {
-            console.log("ELEMENT:"+JSON.stringify({
-                tag: parent_element.nodeName,
-                children: parent_element.children,
-                class: parent_element.className,
-            }));
-        } else {
-            console.log("UNDEFINED ELEMENT");
-        }
 
         var obj_type = typeof obj;
 
@@ -99,7 +88,6 @@ Kindred.Renderer = function() {
             // if this is a keyword, use the renderer-specific function
             return field_func(parent_element, obj, T.context);  
         } else if(obj_name === "content") { 
-            console.log("CONTENT");
             // default behavior for "content" is to simply continue
             // as if it didn't exist
             present(obj_name, obj, parent_element); 
@@ -108,7 +96,6 @@ Kindred.Renderer = function() {
             if(Array.isArray(obj)) obj_type = "list";
 
             if(obj_type === "list") {
-                console.log("ARRAY");
                 
                 Aux.iterate(obj, function(item) {
                     if(typeof item.class === "undefined") {
@@ -122,27 +109,31 @@ Kindred.Renderer = function() {
                 //   (typeof T.renderer.base[obj.base]) === "object" ) {
                 //    obj = Aux.combine(T.renderer.base[obj.base], obj);
                 //}
-                
-                var create_element = function() {
-                    var elem_type = obj.html ? obj.html : "div";
+                var elem_type = (obj && obj.html) ? obj.html : "div";
+
+                var create_element = function(next_element) {
                     element = document.createElement(elem_type);
                     element.className = obj_name;
-                    parent_element.appendChild(element);
+                    if(next_element) {
+                        parent_element.insertBefore(element, next_element);
+                    } else {
+                        parent_element.appendChild(element);
+                    }
                 }
 
                 if(typeof ref_element === "undefined") {
+                    console.log("creating new element");
                     create_element();
-                    console.log("creating element because undefined");
-                } else if(ref_element.tagName !== obj.html) {
+                } else if(ref_element.tagName.toLowerCase() !== elem_type.toLowerCase()) {
+                    console.log("reassigning value of object: "+ref_element.tagName+" != "+elem_type);
+                    var next_element = ref_element.nextSibling;
                     parent_element.removeChild(ref_element);
-                    create_element();
-                    console.log("replacing element because contradictory ref_element passed");
+                    create_element(next_element);
                 } else {
+                    console.log("using old element");
                     element = ref_element;
-                    console.log("using ref_element");
                 }
 
-                console.log("renderer["+obj_type+"](element, "+JSON.stringify(obj)+")");
                 T.renderer[obj_type](element, obj, T.context);
 
                 T.add_element(obj, element);
@@ -155,7 +146,6 @@ Kindred.Renderer = function() {
     T.elements = [];
 
     T.add_element = function(obj, parent_element) {
-        console.log("Adding element "+JSON.stringify(obj));
         // This makes the obj reactive, so that whenever it 
         // is changed, it will be re-presented.
         if(typeof obj === "object") {
@@ -167,18 +157,12 @@ Kindred.Renderer = function() {
                     get: function() { return record; },
                     set: function(new_val) {
                         record = new_val;
-                        console.log("presenting "+field+" in add_element:"+JSON.stringify(record));
                         T.use(mode);
                         elem = present(field, record, parent_element, elem);     
-                        if(elem) console.log("elem = "+elem.innerHTML);
                     },
                 });
-                console.log("old val: "+JSON.stringify(record));
                 obj[field] = record;
-                console.log("- obj is now: "+JSON.stringify(obj));
-                //console.log("elem is now "+elem ? elem.innerHTML : "nothing");
             });
-            console.log("obj is now: "+JSON.stringify(obj));
         }     
     };
 
@@ -191,12 +175,10 @@ Kindred.Renderer = function() {
     T.present = function(obj, parent_element, options) {
 
         T.context = obj;
-        console.log("presenting "+JSON.stringify(obj));
 
         //if(!options.skip_preprocess) {
         obj = T.renderer.preprocess(obj);
         //}
-        console.log("T.add_element("+JSON.stringify(obj)+")");
         T.add_element(obj, parent_element);
     };
 };

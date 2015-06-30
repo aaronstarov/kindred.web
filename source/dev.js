@@ -29,9 +29,12 @@ var date_options = {
 };
 
 var build_dir = path.normalize("../build/"),
+    data_dir = path.normalize("../data/"),
     dev_build_dir = path.join(build_dir,"dev"),
     prod_build_dir = path.join(build_dir,"prod"),
-    documentation_file = path.join(build_dir,"dev","documentation.md"),
+    docs_dir = path.join(data_dir,"docs");
+    table_of_contents = path.join(docs_dir,"table_of_contents.js"),
+    documentation_file = path.join(docs_dir,"documentation.md"),
     documented_dirs = ["_","server","client"],
 
     build_info = [
