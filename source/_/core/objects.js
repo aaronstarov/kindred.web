@@ -14,7 +14,7 @@ Aux.combine = function(a, b) {
         c[field] = a[field];
     });
     Aux.apply_to_fields(b, function(field) {
-        if(typeof b[field] === "object") {
+        if(typeof b[field] === "object" && typeof a[field] === "object") {
             c[field] = Aux.combine(a[field], b[field]); 
         } else {
             c[field] = b[field];
