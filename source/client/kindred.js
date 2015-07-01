@@ -27,7 +27,8 @@ renderer.register("table", table_renderer);
 
 var hey = { elem: { style: {backgroundColor:"red"}, c:"hey", onclick: function(a,b,c){ if(a) { alert("hi");}} }};
 //var hey = { elem: "hey", };
-renderer.present(hey, Kindred.root);
+renderer.use("form");
+renderer.present(hey, Kindred.root, {mode: "form"});
 console.log("Hey's now "+JSON.stringify(hey));
 hey.elem.c = "something else";
 hey.elem.c.style = { backgroundColor: "#900000" };

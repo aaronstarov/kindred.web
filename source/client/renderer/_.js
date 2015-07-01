@@ -52,7 +52,7 @@ Kindred.Renderer = function() {
     };
 
     T.register = function(mode, renderer) {
-        T.modes[mode] = Aux.combine(renderer, Kindred.basic.presentation);    
+        T.modes[mode] = Aux.combine(Kindred.basic.presentation, renderer);    
     };
 
     T.use = function(mode) {
@@ -106,7 +106,6 @@ Kindred.Renderer = function() {
                             (T.renderer.html_for[obj_type] ? T.renderer.html_for[obj_type] :
                             // or fallback on div
                             "div");
-            console.log(elem_type);
 
             var create_element = function(next_element) {
                 element = document.createElement(elem_type);
@@ -181,10 +180,18 @@ Kindred.Renderer = function() {
 
         T.context = obj;
 
-        //if(!options.skip_preprocess) {
-        obj = T.renderer.preprocess(obj);
-        //}
+        if(options && !options.skip_preprocess) {
+            obj = T.renderer.preprocess(obj);
+        }
+
+        var old_mode = T.mode;
+        if(options && options.mode) {
+            T.use(options.mode);
+        }
+        console.log("T.add_element("+JSON.stringify(obj)+")");
         T.add_element(obj, parent_element);
+
+        T.use(old_mode);
     };
 };
 

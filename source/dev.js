@@ -394,9 +394,12 @@ for(var _dir in dirs_to_build) {
 //spawn_command("mongo", mongo_cmd);
 
 // kill any existing kindred server
+var is_windows = /^win/.test(process.platform);
 var kill_cmd =  "kill $(ps aux | grep 'kindred-server' | awk '{print $2}')";
 //console.log("\n  $ "+kill_cmd.red);
-exec(kill_cmd);
+if(!is_windows) {
+    exec(kill_cmd);
+}
 
 var server_cmd = "nodemon "+" --watch "+dev_build_dir+" "+path.join(dev_build_dir,"kindred-server.js");
 console.log("\n  Starting server with:\n\n"+
