@@ -1,0 +1,12 @@
+// TODO - logic for retrieving source code and displaying result
+
+Kindred.show_example = function(example_name) {
+    var file_name = 
+    Kindred.get_file("examples/"+example_name);
+};
+
+Kindred.socket.on("file", function(data) {
+    if(data.name.startswith("examples/")) {
+        
+    }
+});

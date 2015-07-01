@@ -137,4 +137,3 @@ Template.make_from = function(a, b) {
 
 }
 
-

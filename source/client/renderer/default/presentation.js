@@ -32,6 +32,25 @@ Kindred.basic.presentation = {
                 element.style[field] = style_obj[field];
             });
         },
+        //
+        css: function(element, css, context) {
+            Kindred.dom.cssFunc(Kindred.dom.css_selector(element), css);
+        },
+        //
+        css_of: function(element, css_obj, context) {
+            var base_selector = Kindred.dom.css_selector(element);
+            Aux.apply_to_fields(css_obj, function(selector) {
+                // TODO (maybe) introduce hierarchical selection via
+                // a check of whether the field is an object or a string
+                var selectors = selector.split(','), 
+                    rule = css_obj[selector],
+                    // take something like "h1, h2, h3" and make:
+                    // ".parent_class h1, .parent_class h2, .parent_class h3"
+                    final_selector = base_selector+' '+selectors.join(', '+base_selector);
+                Kindred.dom.cssFunc(final_selector, rule);   
+            });
+        },
+        //
         header: function(element, text, context) {
             // find closest header in parent context
             var header_level = null;
@@ -76,6 +95,18 @@ Kindred.basic.presentation = {
 
         },
         //
+        ondblclick: function(element, func, context) {
+            element.addEventListener("dblclick", function(e) {
+                func.call(context, e);
+            });
+        },
+        //
+        oncontextmenu: function(element, func, context) {
+            element.addEventListener("contextmenu", function(e) {
+                func.call(context, e);
+            });
+        },
+        //
         onload: function(element, func, context) {
             element.addEventListener("load", function(e) {
                 func.call(context, e);
@@ -98,6 +129,36 @@ Kindred.basic.presentation = {
         //
         onmouseout: function(element, func, context) {
             element.addEventListener("mouseout", function(e) {
+                func.call(context, e);
+            });
+        },
+        //
+        onmousemove: function(element, func, context) {
+            element.addEventListener("mousemove", function(e) {
+                func.call(context, e);
+            });
+        },
+        //
+        onmouseenter: function(element, func, context) {
+            element.addEventListener("mouseenter", function(e) {
+                func.call(context, e);
+            });
+        },
+        //
+        onmouseleave: function(element, func, context) {
+            element.addEventListener("mouseleave", function(e) {
+                func.call(context, e);
+            });
+        },
+        //
+        onmousedown: function(element, func, context) {
+            element.addEventListener("mousedown", function(e) {
+                func.call(context, e);
+            });
+        },
+        //
+        onmouseup: function(element, func, context) {
+            element.addEventListener("mouseup", function(e) {
                 func.call(context, e);
             });
         },
@@ -192,9 +253,4 @@ Kindred.basic.presentation = {
     },
 
 };
-
-Kindred.basic.form = {
-
-};
-
 

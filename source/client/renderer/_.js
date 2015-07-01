@@ -78,7 +78,7 @@ Kindred.Renderer = function() {
 
         var element = ref_element;
 
-        console.log("rendering "+obj_name+" in "+T.mode+":"+JSON.stringify(obj));
+        //console.log("rendering "+obj_name+" in "+T.mode+":"+JSON.stringify(obj));
 
         var obj_type = typeof obj;
 
@@ -188,10 +188,16 @@ Kindred.Renderer = function() {
         if(options && options.mode) {
             T.use(options.mode);
         }
-        console.log("T.add_element("+JSON.stringify(obj)+")");
+        //console.log("T.add_element("+JSON.stringify(obj)+")");
         T.add_element(obj, parent_element);
 
         T.use(old_mode);
     };
 };
 
+var renderer = new Kindred.Renderer();
+
+// TODO - refactor these away
+Kindred.present = renderer.present;
+Kindred.use = renderer.use;
+Kindred.register = renderer.register;

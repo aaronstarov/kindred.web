@@ -1,4 +1,4 @@
-table_renderer = new Kindred.presentation();
+var table_renderer = {};
 
 table_renderer.of.colspan = Kindred.dom.setAttributeFunc("colspan");
 table_renderer.of.rowspan = Kindred.dom.setAttributeFunc("rowspan");
@@ -105,3 +105,5 @@ table_renderer.preprocess = function(obj, state) {
         content: table.rows,
     };
 };
+
+Kindred.basic.table = table_renderer;

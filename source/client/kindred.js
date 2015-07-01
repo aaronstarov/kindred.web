@@ -1,62 +1,35 @@
-
-// comment
-
-Kindred.make_reference = function(obj) {
-    var fields_to_fill = Template.make_from(obj);
-    // save to database, return unique id
-    return reference_id;
-};
-
-Kindred.use_reference = function(id, values) {
-    var template = DB.get_template(id);
-    Aux.iterate(template.vars, function(open_field) {
-        Aux.set_field(template.base, open_field, values[i]);
-    });
-    return template.base;
-};
-
 /////////////---------------------------------------
 // Main 
 /////////////---------------------------------------
 
-var renderer = new Kindred.Renderer();
-
-renderer.register("form", Kindred.basic.form);
-renderer.register("table", table_renderer);
-//renderer.use("table");
-
-var hey = { elem: { style: {backgroundColor:"red"}, c:"hey", onclick: function(a,b,c){ if(a) { alert("hi");}} }};
-//var hey = { elem: "hey", };
-renderer.use("form");
-renderer.present(hey, Kindred.root, {mode: "form"});
-console.log("Hey's now "+JSON.stringify(hey));
-hey.elem.c = "something else";
-hey.elem.c.style = { backgroundColor: "#900000" };
-
-// TODO - remove old presentation
-
-console.log("connecting");
-var connect_socket = function(host) {
-    return host ? io(host) : io();
-};
-var local_connection = connect_socket();
 var home_is_set = false;
-local_connection.on('home', function(home) {
+
+Kindred.socket.on('home', function(home) {
     console.log("presenting "+JSON.stringify(home));
     if(!home_is_set){
-        renderer.present(home, Kindred.root);
+        Kindred.present(home, Kindred.root);
         home_is_set = true;
-        Kindred.get_file(local_connection, "docs/documentation.md");
+        Kindred.get_file("docs/documentation.md");
     }
 });    
 
-local_connection.on("file", function(file_obj) {
+Kindred.socket.on("file", function(file_obj) {
     console.log("got file: "+JSON.stringify(file_obj));
-    renderer.present(file_obj, document.getElementById("dev-root"));
+    var css = "margin: 40px auto; width: 800px; font-family: Lustria;";
+    var css_of = {
+        "h1, h2, h3": "font-family: Cinzel;",
+        h1: "text-align: center; line-height: 400px; font-size: 3em;",
+        h2: "border-top: 8px solid black; line-height: 80px; margin-top: 100px; font-size: 1.7em;",
+        h3: "margin-top: 40px; font-size: 1.5em;",
+        h4: "font-size: 1.2em;",
+        h5: "font-size: 1em;",
+        a: "text-decoration: none; color: #900; font-weight: bold;",
+        ".sidenote-wrapper": "position: relative; width: 0; height: 0",
+        ".sidenote": "position: absolute; width: 200px; left: -220px; top: -80px; font-size: .7em; border-right: 4px solid black;",
+        pre: "margin-left: 50px;",
+        code: "font-weight: bold; color: #333;",
+    };
+    Kindred.present({file: {css:css, css_of:css_of, content:file_obj}}, document.getElementById("dev-root"));
+    
+    Kindred.present(our_obj, document.getElementById("example1")); 
 }); 
-////var test_table = { render: { mode: "table", content: Test.report }};
-////var test_table = { render: { mode: "table", content: { a: { b: "hi", c:"bye" }}}};
-//renderer.use("table");
-//var test_table = { a: { b: "hi", c:{ d:"bye", e:"end" } }};
-////renderer.present("tests", test_table, document.getElementById("dev-root")); 
-//renderer.present("tests", Test.report, document.getElementById("dev-root")); 
