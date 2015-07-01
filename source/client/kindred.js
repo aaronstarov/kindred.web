@@ -32,23 +32,27 @@ console.log("Hey's now "+JSON.stringify(hey));
 hey.elem.c = "something else";
 hey.elem.c.style = { backgroundColor: "#900000" };
 
-
-renderer.present(counter, Kindred.root);
-
 // TODO - remove old presentation
 
-//console.log("connecting");
-//var connect_socket = function(host) {
-//    return host ? io(host) : io();
-//};
-//var local_connection = connect_socket();
-//var home_is_set = false;
-//local_connection.on('home', function(home) {
-//    if(!home_is_set){
-//        //renderer.present("home", home, Kindred.root);
-//        home_is_set = true;
-//    }
-//});    
+console.log("connecting");
+var connect_socket = function(host) {
+    return host ? io(host) : io();
+};
+var local_connection = connect_socket();
+var home_is_set = false;
+local_connection.on('home', function(home) {
+    console.log("presenting "+JSON.stringify(home));
+    if(!home_is_set){
+        renderer.present(home, Kindred.root);
+        home_is_set = true;
+        Kindred.get_file(local_connection, "docs/documentation.md");
+    }
+});    
+
+local_connection.on("file", function(file_obj) {
+    console.log("got file: "+JSON.stringify(file_obj));
+    renderer.present(file_obj, document.getElementById("dev-root"));
+}); 
 ////var test_table = { render: { mode: "table", content: Test.report }};
 ////var test_table = { render: { mode: "table", content: { a: { b: "hi", c:"bye" }}}};
 //renderer.use("table");

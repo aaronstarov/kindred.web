@@ -87,60 +87,65 @@ Kindred.Renderer = function() {
             console.log("KEYWORD: "+obj_name);
             // if this is a keyword, use the renderer-specific function
             return field_func(parent_element, obj, T.context);  
-        } else if(obj_name === "content") { 
+        } /*else if(obj_name === "content") { 
             // default behavior for "content" is to simply continue
             // as if it didn't exist
             present(obj_name, obj, parent_element); 
-        } else {
+        } XXX - cute idea, not worth fixing now */ else {
             // create a new html element and recursively present any child elements
+
             if(Array.isArray(obj)) obj_type = "list";
 
+            //if((typeof obj.base !== "undefined") && 
+            //   (typeof T.renderer.base[obj.base]) === "object" ) {
+            //    obj = Aux.combine(T.renderer.base[obj.base], obj);
+            //}
+            // Use the html tag specified in object if it's there, 
+            var elem_type = (obj && obj.html) ? obj.html :
+                            // or the default tag for that type, 
+                            (T.renderer.html_for[obj_type] ? T.renderer.html_for[obj_type] :
+                            // or fallback on div
+                            "div");
+            console.log(elem_type);
+
+            var create_element = function(next_element) {
+                element = document.createElement(elem_type);
+                element.className = obj_name;
+                if(next_element) {
+                    parent_element.insertBefore(element, next_element);
+                } else {
+                    parent_element.appendChild(element);
+                }
+            }
+
+            if(typeof ref_element === "undefined") {
+                console.log("creating new element");
+                create_element();
+            } else if(ref_element.tagName.toLowerCase() !== elem_type.toLowerCase()) {
+                console.log("reassigning value of object: "+ref_element.tagName+" != "+elem_type);
+                var next_element = ref_element.nextSibling;
+                parent_element.removeChild(ref_element);
+                create_element(next_element);
+            } else {
+                console.log("using old element");
+                element = ref_element;
+            }
+
+            T.renderer[obj_type](element, obj, T.context);
+
+            T.add_element(obj, element);
+
             if(obj_type === "list") {
-                
+                console.log("LIST");
                 Aux.iterate(obj, function(item) {
-                    if(typeof item.class === "undefined") {
-                        item.class = obj_name+"-item";
-                    }
+                    console.log(JSON.stringify(item));
+                    item.className = obj_name+"-item";
                     T.add_element(item, parent_element);
                 });
-                return parent_element; // why not?
-            } else {
-                //if((typeof obj.base !== "undefined") && 
-                //   (typeof T.renderer.base[obj.base]) === "object" ) {
-                //    obj = Aux.combine(T.renderer.base[obj.base], obj);
-                //}
-                var elem_type = (obj && obj.html) ? obj.html : "div";
+            }
 
-                var create_element = function(next_element) {
-                    element = document.createElement(elem_type);
-                    element.className = obj_name;
-                    if(next_element) {
-                        parent_element.insertBefore(element, next_element);
-                    } else {
-                        parent_element.appendChild(element);
-                    }
-                }
-
-                if(typeof ref_element === "undefined") {
-                    console.log("creating new element");
-                    create_element();
-                } else if(ref_element.tagName.toLowerCase() !== elem_type.toLowerCase()) {
-                    console.log("reassigning value of object: "+ref_element.tagName+" != "+elem_type);
-                    var next_element = ref_element.nextSibling;
-                    parent_element.removeChild(ref_element);
-                    create_element(next_element);
-                } else {
-                    console.log("using old element");
-                    element = ref_element;
-                }
-
-                T.renderer[obj_type](element, obj, T.context);
-
-                T.add_element(obj, element);
-
-                return element;
-            } 
-        }
+            return element;
+        } 
     };
 
     T.elements = [];

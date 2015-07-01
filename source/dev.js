@@ -33,7 +33,7 @@ var build_dir = path.normalize("../build/"),
     dev_build_dir = path.join(build_dir,"dev"),
     prod_build_dir = path.join(build_dir,"prod"),
     docs_dir = path.join(data_dir,"docs");
-    table_of_contents = path.join(docs_dir,"table_of_contents.js"),
+    table_of_contents_file = path.join(docs_dir,"table_of_contents.js"),
     documentation_file = path.join(docs_dir,"documentation.md"),
     documented_dirs = ["_","server","client"],
 
@@ -183,6 +183,7 @@ function build(debug_mode) {
     rmdir(build_dir, false);
     makedir(dev_build_dir);
     makedir(prod_build_dir);
+    makedir(docs_dir);
 
     // Read and write index files.
     var html_source_dir = path.join("client","html");
@@ -200,7 +201,8 @@ function build(debug_mode) {
     fs.writeFileSync(path.join(dev_build_dir,"dist","test.js"), test_helper, {flag:'w'});
 
     // Initialize documentation object -- all sub-sections will mirror this pattern
-    var documentation = fs.readFileSync(path.join(__dirname,"..","README.md"));
+    var documentation = fs.readFileSync(path.join(__dirname,"..","README.md")),
+        table_of_contents = "";
      
     makedir(path.join(prod_build_dir,"dist"));
 
@@ -216,8 +218,6 @@ function build(debug_mode) {
         var file = files_breadth_first[i];
         var file_path = path.parse(file);
         if(file_path.ext === '.md') {
-        console.log(file);
-            console.log(file_path);
             var data = fs.readFileSync(file);
             var header = "\n\n",
                 path_parts = file_path.dir.split('/'),
@@ -238,12 +238,13 @@ function build(debug_mode) {
                     --header_depth; 
                 }
             }
-            for(var hi = 0; hi < header_depth; hi++) {
-                header += '#';       
-            }
-            header += ' '+header_title.charAt(0).toUpperCase()+header_title.slice(1)+"\n\n"; 
-
+            capitalized_header = header_title.charAt(0).toUpperCase()+header_title.slice(1);
+            header = "\n\n<h"+header_depth+" id='"+capitalized_header+"'>"+capitalized_header+"</h"+header_depth+">\n\n";
+            
             documentation += header + data;
+
+            contents_entry = "\n\n<h"+header_depth+"><a href='#"+capitalized_header+"'>"+capitalized_header+"</a>";
+            table_of_contents += contents_entry;
         }
     }
     
@@ -271,8 +272,6 @@ function build(debug_mode) {
                     
         var total_kb = 0;
         var files_to_compress = [];
-
-        console.log(files_breadth_first.toString());
 
         for(var i in files) {
             var file = files[i];
@@ -342,8 +341,8 @@ function build(debug_mode) {
 
     }
 
-
     fs.writeFileSync(documentation_file, documentation, {flag:'w'});
+    fs.writeFileSync(table_of_contents_file, table_of_contents, {flag:'w'});
     fs.writeFileSync(dev_index_file, dev_index_tail, {flag:'a'});
 
     console.log("\n-------------------------------------------------\n  "
@@ -351,7 +350,7 @@ function build(debug_mode) {
 
 }
 
-build(true);
+build(true); 
 
 var watcher = function (f, curr, prev) {
     if (typeof f == "object" && prev === null && curr === null) {

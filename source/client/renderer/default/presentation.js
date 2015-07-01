@@ -63,7 +63,7 @@ Kindred.basic.presentation = {
             return header_element;
         },
 
-        class: function(element, className, context) {
+        className: function(element, className, context) {
             element.className += " "+className;
         },
 
@@ -126,7 +126,12 @@ Kindred.basic.presentation = {
             });
         },
         //
-    
+        
+        //
+        //
+        markdown: function(element, md, context) {
+            element.innerHTML = marked(md);     
+        },
     },
 
     // |  
@@ -134,16 +139,23 @@ Kindred.basic.presentation = {
     // the renderer encounters a field with that
     // type.
     // | 
+
+    html_for: {
+        string: "span",
+        number: "span",
+        boolean: "span",
+    },
+
     string: function(element, text, context) {
-        element.innerHTML = text;
+        element.innerHTML = text+' ';
     },
 
     number: function(element, num, context) {
-        element.innerHTML = num.toString();
+        element.innerHTML = num.toString()+' ';
     },
     
     boolean: function(element, bool, context) {
-        element.innerHTML = bool.toString();
+        element.innerHTML = bool.toString()+' ';
     },
     
     function: function(element, func, context) {
