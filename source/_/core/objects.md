@@ -1,1 +1,1 @@
-Basic object utilities for iterating and composing objects, like a stripped down version of the [underscore](underscorejs.org) library. 
+Basic object utilities for iterating and composing objects, like a stripped down version of the [underscore](underscorejs.org) library. [TODO: replace with the underscore library. Everyone else will want to use it anyhow.]

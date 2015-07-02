@@ -26,9 +26,14 @@ io.on("connection", function(socket) {
         style: {
             background: "linear-gradient(#420008,#42001b)",
             color: "#fafafa",
-            padding: "10px",
+            padding: "5px 12px",
+            fontFamily: "Cinzel",
         },
-        copyright: "&copy; 2015 Aaron Starov",
+        css_of: {
+            ".author":"border-left: 2px solid white; padding-left: 8px; margin-left: 8px;",
+        },
+        copyright: "&copy; 2015",
+        author: "Aaron Starov",
     };
 
     socket.emit('home', home);

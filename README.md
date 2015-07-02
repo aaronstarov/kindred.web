@@ -2,11 +2,11 @@
 
 **Note: This project is still in early stages. What is written below should be interpreted as intent rather than reality.**
 
-Kindred is a peer-to-peer architecture that yields applications that scale effortlessly. Any application released on Kindred is distributed and powered by the people who use it, meaning there is no need to manage or finance servers.
+Kindred is a peer-to-peer architecture for creating applications that scale effortlessly. Any application released on Kindred is distributed and powered by the people who use it, meaning there is no need for anyone involved to manage or finance servers.
 
 The central components of Kindred's architecture include:
 
-- a single network-wide identity,
+- a single network-wide account,
 - a secure, efficient communication protocol,
 - content distribution based on market principles, and
 - an intuitive presentation framework for developing applications.
