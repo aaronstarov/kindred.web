@@ -1,6 +1,6 @@
 Below is the same very, *very* simple reactive application written in both Kindred and Meteor, which I'd consider Kindred's most elegant rival (and primary inspiration).
 
-In Meteor, the app is defined in two files, a template file and corresponding javascript:
+In **Meteor**, the app is defined in two files, a template file and corresponding javascript:
 
 *client/numbers.js*
 ```javascript
@@ -39,7 +39,7 @@ Template.numbers.events({
 </template>
 ```
 
-In Kindred, the same app can be written:
+In **Kindred**, the same app can be written:
 
 ```javascript
 var numbers = {
@@ -67,7 +67,7 @@ Kindred.present(numbers, Kindred.root);
 
 There are significant advantages to the Kindred framework:
 
-- reduction of code size by ~1/3
+- reduction of code size by ~⅓
 - fewer concepts/APIs (no templates, no Session variable to trigger reactivity)
 - simpler modularity through pure javascript
 - objects & renderers more easily shared across projects

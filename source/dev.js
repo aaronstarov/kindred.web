@@ -220,7 +220,7 @@ function build(debug_mode) {
         if(file_path.ext === '.md') {
             var data = fs.readFileSync(file);
             var header = "\n\n",
-                path_parts = file_path.dir.split('/'),
+                path_parts = file_path.dir.split(/[\\\/]/),
                 path_part = path_parts.length,
                 header_title = file_path.name;
             while(header_title === '_') {
@@ -274,12 +274,12 @@ function build(debug_mode) {
         var files_to_compress = [];
 
         for(var i in files) {
-            var file = files[i];
-            var file_path = path.parse(file); 
-            var file_parts = file.split('.');
+            var file = files[i],
+                file_path = path.parse(file),
+                file_parts = file.split('.');
 
-            var test_location = file_parts.length - 2;
-
+            var prior_ext_i = file_parts.length - 2;
+            
             if(file_path.ext === '.js') {
                 var data = fs.readFileSync(file);
                 var kb = (data.length/1024);
@@ -293,15 +293,16 @@ function build(debug_mode) {
 
                 switch(build_obj.name) {
                     case "client": 
-                        if(file_parts[test_location] === 'test') {
+                        if(file_parts[prior_ext_i] === "test") {
                             // Wrap this into a test unit and append to the dev file.
-                            var original_file = file_parts.slice(0,test_location).concat(['js']).join('.');     
+                            var original_file = file_parts.slice(0,prior_ext_i).concat(['js']).join('.');     
                             var original_path = path.join(dev_build_dir,"dist",original_file);
                             
                             fs.writeFileSync(original_path, test_head, {flag:'a'});
                             fs.writeFileSync(original_path, '\nTest.begin("'+original_file+'");\n\n', {flag:'a'});
                             fs.writeFileSync(original_path, data, {flag:'a'});
                             fs.writeFileSync(original_path, test_tail, {flag:'a'});
+                             
                         } else {
                             // We'll copy to one file for minification, and add an include script
                             // for an unminified version to make tracking down issues simpler during
@@ -311,12 +312,15 @@ function build(debug_mode) {
                             var script_include = "        <script src='"+file+"'></script>\n";
                             fs.writeFileSync(path.join(file_dir,file_name), data, {flag:'w'}); 
                             fs.writeFileSync(dev_index_file, script_include, {flag:'a'});
-                            files_to_compress.push(file);
-                            fs.writeFileSync(path.join(prod_build_dir,"dist","client.js"), data+"\n", {flag:'a'});    
+
+                            if(file_parts[prior_ext_i] !== "dev") {
+                                files_to_compress.push(file);
+                                fs.writeFileSync(path.join(prod_build_dir,"dist","kindred-client.js"), data+"\n", {flag:'a'});    
+                            }
                         }
                         break
                     case "server":
-                        if(file_parts[test_location] === 'test') {
+                        if(file_parts[prior_ext_i] === 'test') {
                             
                         } else {
                             fs.writeFileSync(dev_build_file, header+data+"\n", {flag:'a'});    

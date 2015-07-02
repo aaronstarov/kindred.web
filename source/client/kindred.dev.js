@@ -25,7 +25,7 @@ Kindred.socket.on("file", function(file_obj) {
         h5: "font-size: 1em;",
         a: "text-decoration: none; color: #900; font-weight: bold;",
         ".sidenote-wrapper": "position: relative; width: 0; height: 0",
-        ".sidenote": "position: absolute; width: 200px; left: -220px; top: -80px; font-size: .7em; border-right: 4px solid black;",
+        ".sidenote": "position: absolute; width: 200px; left: -220px; top: -80px; font-size: .75em; border-right: 4px solid black;",
         pre: "margin-left: 50px;",
         code: "font-weight: bold; color: #333;",
     };

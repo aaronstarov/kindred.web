@@ -26,7 +26,7 @@ io.on("connection", function(socket) {
         style: {
             background: "linear-gradient(#420008,#42001b)",
             color: "#fafafa",
-            padding: "5px",
+            padding: "10px",
         },
         copyright: "&copy; 2015 Aaron Starov",
     };

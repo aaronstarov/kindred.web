@@ -22,3 +22,5 @@ In addition to concatentation of the source code, **dev.js** also compiles tests
 
 The build process creates both development and production versions, where the dev version remains unminified for straight-forward debugging. You can see these in the **build/** directory.
 
+Files that are named with a **.dev.js** extension will only be included in the dev version.
+
