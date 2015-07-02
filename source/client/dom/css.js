@@ -1,6 +1,7 @@
 var stylesheet = document.styleSheets[0];
 
 var css_selector_base = "var selectors = elem.className.split(' ');" +
+    "if(selectors[0] === '') return '';"+
     "return '.'+selectors";
 
 Kindred.dom.css_selectors = new Function("elem", css_selector_base+".join(', .');");
