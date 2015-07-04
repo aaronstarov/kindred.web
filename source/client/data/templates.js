@@ -8,7 +8,7 @@ Template.make_reference = function(obj) {
 
 Template.use_reference = function(id, values) {
     var template = DB.get_template(id);
-    Aux.iterate(template.vars, function(open_field) {
+    _.each(template.vars, function(open_field) {
         Aux.set_field(template.base, open_field, values[i]);
     });
     return template.base;

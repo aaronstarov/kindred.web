@@ -23,16 +23,6 @@ Aux.combine = function(a, b) {
     return c;
 };
 
-Aux.iterate = function(array, f) {
-    var arr = [], 
-        len = array.length;
-    arr.length = len;
-    for(var i = 0; i < len; i++) {
-        arr[i] = f(array[i]);
-    }
-    return arr;
-};
-
 Aux.parse_function = function(func) {
     var arg = "", args = [], body = "", 
         parsing = "args",

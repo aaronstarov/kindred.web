@@ -26,14 +26,15 @@ Template.make_from = function(a, b) {
             base: a, // should contain null for any variable fields
             vars: [],
         };
-        Aux.apply_to_fields(a, function(a_field) {
+        _.each(a, function(a_val, a_field) {
+
             // If these objects don't share the same field, 
             // exclude that field from the template.
             if(typeof b[a_field] === "undefined") { 
                 template.base[a_field] = undefined;
             }
         });
-        Aux.apply_to_fields(b, function(b_field) {
+        _.each(b, function(b_val, b_field) {
             if(typeof a[b_field] === "undefined") { 
                 template.base[b_field] = undefined;
             } else {

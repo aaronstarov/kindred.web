@@ -136,7 +136,7 @@ Kindred.Renderer = function() {
 
             if(obj_type === "list") {
                 console.log("LIST");
-                Aux.iterate(obj, function(item) {
+                _.each(obj, function(item) {
                     console.log(JSON.stringify(item));
                     item.className = obj_name+"-item";
                     T.add_element(item, parent_element);
@@ -153,9 +153,8 @@ Kindred.Renderer = function() {
         // This makes the obj reactive, so that whenever it 
         // is changed, it will be re-presented.
         if(typeof obj === "object") {
-            Aux.apply_to_fields(obj, function(field) {
-                var record = obj[field],
-                    elem,
+            _.each(obj, function(record, field) {
+                var elem,
                     mode = T.mode;
                 Object.defineProperty(obj, field, {
                     get: function() { return record; },

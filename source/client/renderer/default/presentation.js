@@ -22,14 +22,14 @@ Kindred.basic.presentation = {
         },
         //
         attr: function(element, attr_obj, context) {
-            Aux.apply_to_fields(attr_obj, function(field) {
-                element.setAttribute(field, attr_obj[field]);
+            _.each(attr_obj, function(val, field) {
+                element.setAttribute(field, val);
             });
         },
         //
         style: function(element, style_obj, context) {
-            Aux.apply_to_fields(style_obj, function(field) {
-                element.style[field] = style_obj[field];
+            _.each(style_obj, function(val, field) {
+                element.style[field] = val;
             });
         },
         //
@@ -39,11 +39,10 @@ Kindred.basic.presentation = {
         //
         css_of: function(element, css_obj, context) {
             var base_selector = Kindred.dom.css_selector(element);
-            Aux.apply_to_fields(css_obj, function(selector) {
+            _.each(css_obj, function(rule, selector) {
                 // TODO (maybe) introduce hierarchical selection via
                 // a check of whether the field is an object or a string
                 var selectors = selector.split(','), 
-                    rule = css_obj[selector],
                     // take something like "h1, h2, h3" and make:
                     // ".parent_class h1, .parent_class h2, .parent_class h3"
                     final_selector = base_selector+' '+selectors.join(', '+base_selector);
@@ -56,7 +55,7 @@ Kindred.basic.presentation = {
             var header_level = null;
             var check_children = function(element) {
                 // To avoid this kind of traversal, we include abstraction of dom.
-                Aux.iterate(element.children, function(child) {
+                _.each(element.children, function(child) {
                     switch(child.nodeName().toLowerCase()) {
                         case "h1": return 1;
                         case "h2": return 2;
@@ -234,13 +233,13 @@ Kindred.basic.presentation = {
     object: function(element, obj, context) {
         //var rand_seq = Aux.get_random_buffer(4),
         //    almost_rand_color = "#90";
-        //Aux.iterate(rand_seq, function(b) {
+        //_.each(rand_seq, function(b) {
         //    almost_rand_color += (b%16).toString(16);
         //});
         //element.style.backgroundColor = almost_rand_color;
         // Nothing more to do here for now.
         //
-        //Aux.apply_to_fields_of(obj, function(field) {
+        //_.each(obj, function(field) {
         //    switch(field) {
         //        default:
         //            return Kindred.dom.addHtml(p.element, {

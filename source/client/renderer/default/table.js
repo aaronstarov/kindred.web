@@ -49,13 +49,13 @@ Table.prototype.parse = function(field, obj, depth) {
     
     col_obj.table_value = field;
     if(typeof obj === "object") {
-        Aux.apply_to_fields(obj, function(obj_field) {
+        _.each(obj, function(obj_val, obj_field) {
             console.log("parse("+JSON.stringify({
                 field: obj_field,
-                obj: obj[obj_field],
+                obj: obj_val,
                 depth: depth+1,
             })+");");
-            colspan += T.parse(obj_field, obj[obj_field], depth+1);
+            colspan += T.parse(obj_field, obj_val, depth+1);
         });
         col_obj.colspan = colspan;
     } else {
@@ -82,7 +82,7 @@ Table.prototype.parse = function(field, obj, depth) {
 Table.prototype.add_padding = function() {
     var T = this;
     var max_depth = T.rows.length;
-    Aux.iterate(T.index, function(i) {
+    _.each(T.index, function(i) {
         var padding_depth = i.depth+1;
         if(padding_depth < max_depth) {
             var padding = { 

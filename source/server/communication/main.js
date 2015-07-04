@@ -33,6 +33,7 @@ io.on("connection", function(socket) {
             ".author":"border-left: 2px solid white; padding-left: 8px; margin-left: 8px;",
         },
         copyright: "&copy; 2015",
+        // TODO make copyright keyword -- automatically extends year to current one if < current one
         author: "Aaron Starov",
     };
 

@@ -40,14 +40,14 @@ Kindred.events = function() {
         var str = "T.functions['"+event_type+"'] = [];";
         str += "T.active['"+event_type+"'] = [];";
         str += "document.addEventListener('"+event_type+"', function(e) {";
-        str += "    Aux.iterate(T.functions['"+event_type+"'], function(f) {";
+        str += "    _.each(T.functions['"+event_type+"'], function(f) {";
         str += "        f(e);";
         str += "    });";
         str += "};";
     };
 
     var event_types = ["keyup","keydown","keypress"];
-    Aux.iterate(event_types, function(t) {
+    _.each(event_types, function(t) {
         eval(event_template(t));
     });
 
